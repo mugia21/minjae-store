@@ -1,17 +1,36 @@
-# minjae
+# Minjae Store 🌷
 
-A new Flutter project.
+Aplikasi katalog produk berbasis Flutter yang menggunakan API DummyJSON.
 
-## Getting Started
+## Identitas
 
-This project is a starting point for a Flutter application.
+* Nama: Mugia Riksa Shanubari
+* NIM: 240102059
+* Kelas: IF24A
 
-A few resources to get you started if this is your first Flutter project:
+## Deskripsi Aplikasi
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Minjae Store merupakan aplikasi katalog produk yang dibuat menggunakan Flutter dengan desain warna pastel.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Aplikasi ini menggunakan DummyJSON Products API sebagai sumber data produk.
+
+## Fitur Aplikasi
+
+* Menampilkan daftar produk.
+* Pencarian produk.
+* Filter produk berdasarkan kategori.
+* Menampilkan detail produk.
+* Pagination menggunakan tombol Load More Products.
+
+## Teknologi yang Digunakan
+
+* Flutter
+* Dart
+* Dio
+* Provider
+* Cached Network Image
+* DummyJSON API
+
+## Video Presentasi dan Demo
+
+Link YouTube: **https://youtu.be/BZyOraS7Aso?si=EhUgBbRZPC3sVIQ0**
