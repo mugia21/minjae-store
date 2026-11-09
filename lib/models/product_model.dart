@@ -55,6 +55,7 @@ class Product {
               qrCode: '',
             );
 
+  // MEMBACA DATA DARI API
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] ?? 0,
@@ -85,6 +86,7 @@ class Product {
     );
   }
 
+  // MENGUBAH DATA MENJADI JSON UNTUK API
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -93,7 +95,65 @@ class Product {
       'price': price,
       'brand': brand,
       'stock': stock,
+      'thumbnail': thumbnail,
+      'discountPercentage': discountPercentage,
     };
+  }
+
+  // MEMPERBARUI DATA TANPA MENGHILANGKAN INFORMASI LAIN
+  Product copyWith({
+    int? id,
+    String? title,
+    String? description,
+    String? category,
+    double? price,
+    double? discountPercentage,
+    double? rating,
+    int? stock,
+    List<String>? tags,
+    String? brand,
+    String? sku,
+    int? weight,
+    Dimensions? dimensions,
+    String? warrantyInformation,
+    String? shippingInformation,
+    String? availabilityStatus,
+    List<Review>? reviews,
+    String? returnPolicy,
+    int? minimumOrderQuantity,
+    Meta? meta,
+    String? thumbnail,
+    List<String>? images,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      price: price ?? this.price,
+      discountPercentage:
+          discountPercentage ?? this.discountPercentage,
+      rating: rating ?? this.rating,
+      stock: stock ?? this.stock,
+      tags: tags ?? this.tags,
+      brand: brand ?? this.brand,
+      sku: sku ?? this.sku,
+      weight: weight ?? this.weight,
+      dimensions: dimensions ?? this.dimensions,
+      warrantyInformation:
+          warrantyInformation ?? this.warrantyInformation,
+      shippingInformation:
+          shippingInformation ?? this.shippingInformation,
+      availabilityStatus:
+          availabilityStatus ?? this.availabilityStatus,
+      reviews: reviews ?? this.reviews,
+      returnPolicy: returnPolicy ?? this.returnPolicy,
+      minimumOrderQuantity:
+          minimumOrderQuantity ?? this.minimumOrderQuantity,
+      meta: meta ?? this.meta,
+      thumbnail: thumbnail ?? this.thumbnail,
+      images: images ?? this.images,
+    );
   }
 }
 
@@ -208,9 +268,7 @@ class ProductsResponse {
     final List list = json['products'] ?? [];
 
     return ProductsResponse(
-      products: list
-          .map((e) => Product.fromJson(e))
-          .toList(),
+      products: list.map((e) => Product.fromJson(e)).toList(),
       total: json['total'] ?? list.length,
       skip: json['skip'] ?? 0,
       limit: json['limit'] ?? 30,

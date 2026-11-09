@@ -6,6 +6,9 @@ class ProductProvider extends ChangeNotifier {
   final ApiServiceProducts _api = ApiServiceProducts();
 
   List<Product> _products = [];
+  // Menyimpan ID produk yang ditambahkan sendiri
+  final Set<int> _localProductIds = {};
+
   List<String> _categoryList = [];
 
   bool _loading = false;
@@ -32,6 +35,8 @@ class ProductProvider extends ChangeNotifier {
   }) async {
     _loading = true;
     _error = null;
+    _selectedCategory = '';
+
     notifyListeners();
 
     try {
@@ -65,12 +70,12 @@ class ProductProvider extends ChangeNotifier {
   // SEARCH PRODUCTS
   Future<void> searchProducts(String query) async {
     if (query.trim().isEmpty) {
-      _selectedCategory = '';
       return fetchProducts();
     }
 
     _loading = true;
     _error = null;
+
     notifyListeners();
 
     try {
@@ -92,6 +97,7 @@ class ProductProvider extends ChangeNotifier {
 
     _loading = true;
     _error = null;
+
     notifyListeners();
 
     try {
@@ -114,6 +120,7 @@ class ProductProvider extends ChangeNotifier {
   ) async {
     _loading = true;
     _error = null;
+
     notifyListeners();
 
     try {
@@ -137,14 +144,15 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _skip += 30;
+      final nextSkip = _skip + 30;
 
       final result = await _api.getAllProducts(
         limit: 30,
-        skip: _skip,
+        skip: nextSkip,
       );
 
       _products.addAll(result.products);
+      _skip = result.skip;
     } catch (e) {
       _error = 'Gagal memuat produk berikutnya: $e';
     }
@@ -153,63 +161,117 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // CREATE PRODUCT
+Future<bool> addProduct(Map<String, dynamic> data) async {
+  _error = null;
+
+  try {
+    final result = await _api.addProduct(data);
+
+    // Tandai sebagai produk lokal
+    _localProductIds.add(result.id);
+
+    _products.insert(0, result);
+    _total++;
+
+    notifyListeners();
+    return true;
+  } catch (e) {
+    _error = 'Gagal menambahkan produk: $e';
+
+    notifyListeners();
+    return false;
+  }
+}
+
   // UPDATE PRODUCT
-  Future<bool> updateProduct(
-    int id,
-    Product updated,
-  ) async {
-    try {
-      final result = await _api.updateProduct(
-        id,
-        updated.toJson(),
-      );
+Future<bool> updateProduct(
+  int id,
+  Map<String, dynamic> data,
+) async {
+  _error = null;
 
-      final index = _products.indexWhere((p) => p.id == id);
+  try {
+    final index = _products.indexWhere(
+      (product) => product.id == id,
+    );
 
-      if (index != -1) {
-        _products[index] = result;
-        notifyListeners();
-      }
-
-      return true;
-    } catch (e) {
-      _error = 'Gagal memperbarui produk: $e';
-      notifyListeners();
-      return false;
+    if (index == -1) {
+      throw Exception('Produk tidak ditemukan');
     }
-  }
 
-  // ADD PRODUCT
-  Future<bool> addProduct(Map<String, dynamic> data) async {
-    try {
-      final result = await _api.addProduct(data);
-
-      _products.insert(0, result);
-      _total++;
-
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = 'Gagal menambahkan produk: $e';
-      notifyListeners();
-      return false;
+    // Produk bawaan API menggunakan request PUT.
+    // Produk lokal cukup diperbarui di aplikasi.
+    if (!_localProductIds.contains(id)) {
+      await _api.updateProduct(id, data);
     }
+
+    final currentProduct = _products[index];
+
+    _products[index] = currentProduct.copyWith(
+      title: data['title'] ?? currentProduct.title,
+      description: data['description'] ?? currentProduct.description,
+      category: data['category'] ?? currentProduct.category,
+      price: data['price'] != null
+          ? (data['price'] as num).toDouble()
+          : currentProduct.price,
+      brand: data['brand'] ?? currentProduct.brand,
+      stock: data['stock'] != null
+          ? (data['stock'] as num).toInt()
+          : currentProduct.stock,
+      thumbnail: data['thumbnail'] ?? currentProduct.thumbnail,
+      discountPercentage: data['discountPercentage'] != null
+          ? (data['discountPercentage'] as num).toDouble()
+          : currentProduct.discountPercentage,
+    );
+
+    notifyListeners();
+    return true;
+  } catch (e) {
+    _error = 'Gagal memperbarui produk: $e';
+
+    notifyListeners();
+    return false;
   }
+}
 
   // DELETE PRODUCT
-  Future<bool> deleteProduct(int id) async {
-    try {
-      await _api.deleteProduct(id);
+Future<bool> deleteProduct(int id) async {
+  _error = null;
 
-      _products.removeWhere((p) => p.id == id);
-      _total--;
+  try {
+    // Pastikan produk tersedia
+    final index = _products.indexWhere(
+      (product) => product.id == id,
+    );
 
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = 'Gagal menghapus produk: $e';
-      notifyListeners();
-      return false;
+    if (index == -1) {
+      throw Exception('Produk tidak ditemukan');
     }
+
+    // Produk bawaan API menggunakan request DELETE.
+    // Produk lokal langsung dihapus dari aplikasi.
+    if (!_localProductIds.contains(id)) {
+      await _api.deleteProduct(id);
+    }
+
+    // Hapus dari daftar lokal
+    _products.removeAt(index);
+
+    // Hapus penanda produk lokal
+    _localProductIds.remove(id);
+
+    if (_total > 0) {
+      _total--;
+    }
+
+    notifyListeners();
+    return true;
+  } catch (e) {
+    _error = 'Gagal menghapus produk: $e';
+
+    notifyListeners();
+    return false;
   }
+}
 }

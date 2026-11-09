@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 import '../models/product_model.dart';
+import '../providers/product_provider.dart';
 import '../theme/app_theme.dart';
+import 'form_product_screen.dart';
 
-class DetailProductScreen extends StatelessWidget {
+class DetailProductScreen extends StatefulWidget {
   final Product product;
 
   const DetailProductScreen({
@@ -13,9 +16,110 @@ class DetailProductScreen extends StatelessWidget {
   });
 
   @override
+  State<DetailProductScreen> createState() =>
+      _DetailProductScreenState();
+}
+
+class _DetailProductScreenState
+    extends State<DetailProductScreen> {
+
+  Product get product => widget.product;
+
+  // EDIT PRODUCT
+  Future<void> _editProduct() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FormProductScreen(
+          product: product,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (result == true) {
+      Navigator.pop(context, true);
+    }
+  }
+
+  // DELETE PRODUCT
+  Future<void> _deleteProduct() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.cream,
+          title: const Text(
+            'Delete Product?',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textDark,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to delete "${product.title}"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    final success = await context
+        .read<ProductProvider>()
+        .deleteProduct(product.id);
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Product deleted successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.read<ProductProvider>().error ??
+                'Failed to delete product',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.cream,
+
       appBar: AppBar(
         backgroundColor: AppTheme.cream,
         title: const Text(
@@ -25,6 +129,30 @@ class DetailProductScreen extends StatelessWidget {
             color: AppTheme.textDark,
           ),
         ),
+
+        actions: [
+          // EDIT BUTTON
+          IconButton(
+            onPressed: _editProduct,
+            icon: const Icon(
+              Icons.edit_outlined,
+              color: AppTheme.textDark,
+            ),
+            tooltip: 'Edit Product',
+          ),
+
+          // DELETE BUTTON
+          IconButton(
+            onPressed: _deleteProduct,
+            icon: const Icon(
+              Icons.delete_outline,
+              color: Colors.red,
+            ),
+            tooltip: 'Delete Product',
+          ),
+
+          const SizedBox(width: 8),
+        ],
       ),
 
       body: SingleChildScrollView(
@@ -203,22 +331,10 @@ class DetailProductScreen extends StatelessWidget {
                   _infoRow('Brand', product.brand),
                   _infoRow('SKU', product.sku),
                   _infoRow('Weight', '${product.weight} g'),
-                  _infoRow(
-                    'Warranty',
-                    product.warrantyInformation,
-                  ),
-                  _infoRow(
-                    'Shipping',
-                    product.shippingInformation,
-                  ),
-                  _infoRow(
-                    'Availability',
-                    product.availabilityStatus,
-                  ),
-                  _infoRow(
-                    'Return Policy',
-                    product.returnPolicy,
-                  ),
+                  _infoRow('Warranty', product.warrantyInformation),
+                  _infoRow('Shipping', product.shippingInformation),
+                  _infoRow('Availability', product.availabilityStatus),
+                  _infoRow('Return Policy', product.returnPolicy),
 
                   const SizedBox(height: 25),
 

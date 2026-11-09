@@ -151,9 +151,7 @@ class ApiServiceProducts {
   }
 
   // DELETE PRODUCT
-  Future<Product> deleteProduct(int id) async {
-    final response = await _dio.delete('/products/$id');
-
-    return Product.fromJson(response.data);
-  }
+Future<void> deleteProduct(int id) async {
+  await _dio.delete('/products/$id');
+}
 }

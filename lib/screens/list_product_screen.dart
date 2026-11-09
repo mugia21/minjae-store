@@ -1,4 +1,5 @@
 import 'detail_product_screen.dart';
+import 'form_product_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -227,29 +228,76 @@ class _ListProductScreenState extends State<ListProductScreen> {
                         const SizedBox(height: 25),
 
                         // PRODUCT TITLE
-                        Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Popular Products',
-                              style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textDark,
-                              ),
-                            ),
-                            Text(
-                              '${provider.total} Products',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    const Text(
+      'Popular Products',
+      style: TextStyle(
+        fontSize: 19,
+        fontWeight: FontWeight.bold,
+        color: AppTheme.textDark,
+      ),
+    ),
 
-                        const SizedBox(height: 15),
+    Row(
+      children: [
+        Text(
+          '${provider.total} Products',
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        // ADD PRODUCT BUTTON
+        InkWell(
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FormProductScreen(),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 9,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryPink,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.add,
+                  size: 17,
+                  color: AppTheme.textDark,
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'Add',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  ],
+),
+
+const SizedBox(height: 15),
                       ],
                     ),
                   ),
